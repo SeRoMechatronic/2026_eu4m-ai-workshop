@@ -57,18 +57,29 @@ def base_cells():
             import pandas as pd
 
             REPOSITORY = "SeRoMechatronic/2026_eu4m-ai-workshop"
-            LOCAL_DATA = Path("data/actuator_signals.csv")
             PART_NAMES = [
                 "actuator_signals_nominal.csv",
                 "actuator_signals_actuator_loss.csv",
                 "actuator_signals_sensor_bias.csv",
             ]
-            LOCAL_PARTS = [Path("data") / name for name in PART_NAMES]
+            # Jupyter ejecuta normalmente desde ``notebooks/``; Colab lo hace desde
+            # el directorio de carga. Se prueban ambos casos antes de usar la red.
+            DATA_DIRS = [Path("data"), Path("../data"), Path(".")]
+            LOCAL_DATA = next(
+                (folder / "actuator_signals.csv" for folder in DATA_DIRS
+                 if (folder / "actuator_signals.csv").exists()),
+                None,
+            )
+            LOCAL_PARTS = next(
+                ([folder / name for name in PART_NAMES] for folder in DATA_DIRS
+                 if all((folder / name).exists() for name in PART_NAMES)),
+                None,
+            )
 
-            if LOCAL_DATA.exists():
+            if LOCAL_DATA is not None:
                 data = pd.read_csv(LOCAL_DATA)
                 source = str(LOCAL_DATA)
-            elif all(path.exists() for path in LOCAL_PARTS):
+            elif LOCAL_PARTS is not None:
                 data = pd.concat([pd.read_csv(path) for path in LOCAL_PARTS], ignore_index=True)
                 source = " + ".join(map(str, LOCAL_PARTS))
             else:
