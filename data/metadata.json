@@ -1,0 +1,34 @@
+{
+  "purpose": "Synthetic teaching data; not an industrially validated actuator model.",
+  "model": "PD-controlled point mass with viscous damping",
+  "scenarios": [
+    "nominal",
+    "actuator_loss",
+    "sensor_bias"
+  ],
+  "rows": 9600,
+  "runs": 24,
+  "config": {
+    "dt_s": 0.02,
+    "duration_s": 8.0,
+    "mass_kg": 1.2,
+    "damping_n_s_m": 2.0,
+    "kp_n_m": 18.0,
+    "kd_n_s_m": 5.0,
+    "force_limit_n": 12.0,
+    "position_noise_std_m": 0.003,
+    "velocity_noise_std_m_s": 0.006,
+    "runs_per_scenario": 8,
+    "base_seed": 2609
+  },
+  "sha256": {
+    "actuator_signals.csv": "faa229bd6660f8677c9c5b3e4c76cdea9b2bcc79c2cda8df61d587366a8f81a1",
+    "actuator_signals_nominal.csv": "76e63fc4818112e44defa88d58e5cd75f0973d2f9460d309244c14af1deb044f",
+    "actuator_signals_actuator_loss.csv": "f4b688cda95602c8bada12e878ede387849b4a7e05985eb661944e1a32c5a757",
+    "actuator_signals_sensor_bias.csv": "07829af57faed03888bcee2f414e87f683e56e04580f171ecfce9b516f260201",
+    "run_features.csv": "f046f75cc47f61b199e73393d84e1e9a8450035e323fdee7e559dcc4a65dac77",
+    "scenario_summary.csv": "6fb1dbf0567f8cce590ce62cdee687fe42f6a69a9205d40636d476068f232ceb",
+    "case_A.csv": "9ceb66df134f47c56bddbcd82551d04c941f3ec0e0c1740b9d9079454cb7d3f6",
+    "case_B.csv": "b937c2a2775045e45c4a6d18dfe8acd293e9cf16d0c28c3518b41d8cc086264e"
+  }
+}

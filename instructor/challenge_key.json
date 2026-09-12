@@ -1,0 +1,8 @@
+{
+  "warning": "Do not distribute before the assessed activity.",
+  "mapping": {
+    "case_A": "actuator_loss_07",
+    "case_B": "sensor_bias_07"
+  },
+  "important_limit": "The operational files do not contain independent ground truth. A student must not claim a definitive diagnosis from them alone."
+}

@@ -1,0 +1,23 @@
+name: validate-materials
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt
+      - run: python scripts/build_notebooks.py
+      - name: Execute notebooks with a real Jupyter kernel
+        run: |
+          jupyter nbconvert --to notebook --execute notebooks/03_actuator_case_student.ipynb --output /tmp/student.ipynb --ExecutePreprocessor.timeout=180
+          jupyter nbconvert --to notebook --execute notebooks/03_actuator_case_solution.ipynb --output /tmp/solution.ipynb --ExecutePreprocessor.timeout=180
+      - run: python scripts/run_all.py

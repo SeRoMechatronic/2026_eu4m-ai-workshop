@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use these teaching materials, please cite them as follows."
+title: "IA aplicada con verificación para EU4M"
+type: software
+version: 1.0.0
+date-released: 2026-09-12
+authors:
+  - family-names: "Rojas Ordóñez"
+    given-names: "José Sebastián"
+repository-code: "https://github.com/SeRoMechatronic/2026_eu4m-ai-workshop"
+license: MIT
+

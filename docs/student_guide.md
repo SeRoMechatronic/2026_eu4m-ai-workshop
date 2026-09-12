@@ -1,0 +1,56 @@
+# Guía del estudiante
+
+## Antes del curso
+
+1. Confirme que puede acceder a GitHub y, si se utilizará, a Google Colab con su
+   cuenta individual de EU4M.
+2. Lleve un portátil con navegador actualizado y cargador.
+3. Descargue el paquete alternativo si el docente lo distribuye.
+4. No cargue datos personales, confidenciales o sujetos a acuerdos de proyecto en
+   herramientas externas.
+
+## Durante el curso
+
+Trabajará con varias herramientas, pero se evaluará su método. Guarde:
+
+- una matriz de fuentes;
+- un registro PVRD;
+- un resultado técnico comprobado;
+- una respuesta individual de salida.
+
+## Protocolo PVRD
+
+### Prompt
+
+Escriba el propósito, los datos disponibles, las restricciones y el criterio que
+permitirá aceptar la respuesta.
+
+### Verificar
+
+Elija una prueba adecuada:
+
+- DOI, página del editor o texto original para una cita;
+- cálculo independiente para una cifra;
+- ejecución y prueba para código;
+- gráfica, log o medición para una interpretación técnica.
+
+### Refinar
+
+Corrija el contenido manualmente o prepare una segunda petición. No oculte una
+salida errónea que haya influido en su trabajo.
+
+### Documentar
+
+Registre qué aceptó, qué rechazó, qué cambió y qué limitación permanece.
+
+## Regla de seguridad
+
+Una respuesta fluida no constituye evidencia. Cuando una afirmación no pueda
+comprobarse durante la sesión, márquela como pendiente y no la utilice como base
+de una decisión técnica.
+
+## Uso de soluciones
+
+Los materiales de instructor sirven para la revisión posterior. Consultarlos
+durante una actividad individual invalida esa evidencia.
+
