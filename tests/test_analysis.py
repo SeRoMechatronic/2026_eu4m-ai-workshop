@@ -49,3 +49,11 @@ def test_outputs_are_finite(features):
     numeric = features.select_dtypes(include=[np.number])
     assert np.isfinite(numeric.to_numpy()).all()
 
+
+def test_saturation_threshold_follows_the_force_limit():
+    dataset = simulate_dataset()
+    default = build_run_features(dataset)
+    higher_limit = build_run_features(dataset, force_limit_n=1000.0)
+    assert default["force_saturation_fraction"].max() > 0
+    assert (higher_limit["force_saturation_fraction"] == 0).all()
+

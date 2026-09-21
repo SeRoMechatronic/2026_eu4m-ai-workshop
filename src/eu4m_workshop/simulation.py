@@ -121,6 +121,9 @@ def simulate_run(
 def simulate_dataset(config: SimulationConfig | None = None) -> pd.DataFrame:
     """Generate the complete balanced dataset in a stable row order."""
     cfg = config or SimulationConfig()
+    if cfg.runs_per_scenario > 100:
+        # Las semillas se separan 100 unidades entre escenarios.
+        raise ValueError("runs_per_scenario must not exceed 100")
     frames = [
         simulate_run(scenario, run_index, cfg)
         for scenario in SCENARIOS

@@ -1,0 +1,18 @@
+# Los hashes SHA-256 de datos y resultados se calculan sobre bytes LF.
+# Fijar LF evita que Git en Windows (core.autocrlf=true) convierta los CSV a CRLF.
+* text=auto eol=lf
+
+*.csv text eol=lf
+*.json text eol=lf
+*.ipynb text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*.cff text eol=lf
+*.toml text eol=lf
+
+*.pptx binary
+*.docx binary
+*.pdf binary
+*.png binary
+*.zip binary

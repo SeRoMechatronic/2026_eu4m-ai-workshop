@@ -1,29 +1,30 @@
 #!/usr/bin/env python3
-"""Generate deterministic workshop data and reference summaries."""
+"""Generate deterministic workshop data and reference summaries.
+
+The dataset is published as one CSV per scenario. Its combined form is never
+written to disk: ``metadata.json`` records the hash of the canonical CSV of the
+concatenation, which is what the notebooks verify.
+"""
 
 from __future__ import annotations
 
-import hashlib
 import json
 from pathlib import Path
 
 from eu4m_workshop import (
+    PART_NAMES,
     SimulationConfig,
     build_run_features,
     build_scenario_summary,
+    dataframe_sha256,
+    file_sha256,
     simulate_dataset,
+    to_canonical_csv,
 )
 
 
 ROOT = Path(__file__).resolve().parents[1]
-
-
-def sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(65536), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+SCENARIOS = ("nominal", "actuator_loss", "sensor_bias")
 
 
 def main() -> None:
@@ -37,73 +38,37 @@ def main() -> None:
     features = build_run_features(dataset)
     summary = build_scenario_summary(features)
 
-    dataset_path = data_dir / "actuator_signals.csv"
+    part_paths: dict[str, Path] = {}
+    for scenario, name in zip(SCENARIOS, PART_NAMES):
+        part_path = data_dir / name
+        part_path.write_bytes(to_canonical_csv(dataset.loc[dataset["scenario"] == scenario]))
+        part_paths[name] = part_path
     features_path = results_dir / "run_features.csv"
     summary_path = results_dir / "scenario_summary.csv"
-    dataset.to_csv(dataset_path, index=False, float_format="%.8f")
-    part_paths: dict[str, Path] = {}
-    for scenario in ("nominal", "actuator_loss", "sensor_bias"):
-        part_path = data_dir / f"actuator_signals_{scenario}.csv"
-        dataset.loc[dataset["scenario"] == scenario].to_csv(
-            part_path, index=False, float_format="%.8f"
-        )
-        part_paths[part_path.name] = part_path
-    features.to_csv(features_path, index=False, float_format="%.8f")
-    summary.to_csv(summary_path, index=False, float_format="%.8f")
-
-    operational_columns = [
-        "time_s",
-        "reference_m",
-        "position_measured_m",
-        "velocity_measured_m_s",
-        "force_command_n",
-    ]
-    challenge_map = {
-        "case_A": "actuator_loss_07",
-        "case_B": "sensor_bias_07",
-    }
-    for case_name, source_run in challenge_map.items():
-        challenge = dataset.loc[dataset["run_id"] == source_run, operational_columns]
-        challenge.to_csv(
-            data_dir / f"{case_name}.csv", index=False, float_format="%.8f"
-        )
-    instructor_dir = ROOT / "instructor"
-    instructor_dir.mkdir(exist_ok=True)
-    (instructor_dir / "challenge_key.json").write_text(
-        json.dumps(
-            {
-                "warning": "Do not distribute before the assessed activity.",
-                "mapping": challenge_map,
-                "important_limit": (
-                    "The operational files do not contain independent ground truth. "
-                    "A student must not claim a definitive diagnosis from them alone."
-                ),
-            },
-            indent=2,
-            ensure_ascii=False,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
+    features_path.write_bytes(to_canonical_csv(features))
+    summary_path.write_bytes(to_canonical_csv(summary))
 
     metadata = {
         "purpose": "Synthetic teaching data; not an industrially validated actuator model.",
         "model": "PD-controlled point mass with viscous damping",
-        "scenarios": ["nominal", "actuator_loss", "sensor_bias"],
+        "scenarios": list(SCENARIOS),
         "rows": int(len(dataset)),
         "runs": int(dataset["run_id"].nunique()),
         "config": cfg.to_dict(),
+        "hash_convention": (
+            "SHA-256 over UTF-8 CSV with LF line endings and floats written with "
+            "eight decimals. combined_dataset is the hash of the three parts "
+            "concatenated in the order of 'scenarios' under a single header."
+        ),
         "sha256": {
-            "actuator_signals.csv": sha256(dataset_path),
-            **{name: sha256(path) for name, path in part_paths.items()},
-            "run_features.csv": sha256(features_path),
-            "scenario_summary.csv": sha256(summary_path),
-            "case_A.csv": sha256(data_dir / "case_A.csv"),
-            "case_B.csv": sha256(data_dir / "case_B.csv"),
+            "combined_dataset": dataframe_sha256(dataset),
+            **{name: file_sha256(path) for name, path in part_paths.items()},
+            "run_features.csv": file_sha256(features_path),
+            "scenario_summary.csv": file_sha256(summary_path),
         },
     }
-    (data_dir / "metadata.json").write_text(
-        json.dumps(metadata, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    (data_dir / "metadata.json").write_bytes(
+        (json.dumps(metadata, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
     )
     print(json.dumps(metadata, indent=2, ensure_ascii=False))
 

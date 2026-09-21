@@ -41,3 +41,14 @@ def test_config_changes_number_of_samples():
     df = simulate_dataset(cfg)
     assert len(df) == 3 * 40
 
+
+def test_more_than_100_runs_would_overlap_seeds():
+    with pytest.raises(ValueError, match="must not exceed 100"):
+        simulate_dataset(SimulationConfig(runs_per_scenario=101))
+
+
+def test_private_base_seed_changes_the_signals():
+    public = simulate_run("sensor_bias", 0)
+    private = simulate_run("sensor_bias", 0, SimulationConfig(base_seed=7319051))
+    assert not public["position_measured_m"].equals(private["position_measured_m"])
+

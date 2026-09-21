@@ -27,9 +27,14 @@ def _validate(df: pd.DataFrame) -> None:
         raise ValueError("Dataset contains missing values")
 
 
-def build_run_features(df: pd.DataFrame, ignore_before_s: float = 1.0) -> pd.DataFrame:
+def build_run_features(
+    df: pd.DataFrame,
+    ignore_before_s: float = 1.0,
+    force_limit_n: float = 12.0,
+) -> pd.DataFrame:
     """Calculate one transparent feature row for every simulated run."""
     _validate(df)
+    saturation_threshold_n = force_limit_n - 0.001
     records: list[dict[str, float | str]] = []
     for run_id, group in df.groupby("run_id", sort=True):
         g = group.loc[group["time_s"] >= ignore_before_s].copy()
@@ -45,7 +50,7 @@ def build_run_features(df: pd.DataFrame, ignore_before_s: float = 1.0) -> pd.Dat
                 "mean_sensor_residual_m": float(sensor_residual.mean()),
                 "force_command_rms_n": float(np.sqrt(np.mean(g["force_command_n"] ** 2))),
                 "force_saturation_fraction": float(
-                    np.mean(np.abs(g["force_command_n"]) >= 11.999)
+                    np.mean(np.abs(g["force_command_n"]) >= saturation_threshold_n)
                 ),
                 "final_true_error_m": float(true_error.iloc[-1]),
             }

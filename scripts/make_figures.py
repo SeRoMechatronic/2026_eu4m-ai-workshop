@@ -3,10 +3,13 @@
 
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
+
+from eu4m_workshop import load_dataset
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,9 +26,11 @@ LABELS = {
 
 
 def main() -> None:
-    data = pd.read_csv(ROOT / "data" / "actuator_signals.csv")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out", type=Path, default=ROOT / "assets", help="carpeta de salida")
+    out = parser.parse_args().out
+    data = load_dataset(ROOT / "data")
     summary = pd.read_csv(ROOT / "results" / "scenario_summary.csv")
-    out = ROOT / "assets"
     out.mkdir(exist_ok=True)
 
     fig, axes = plt.subplots(3, 1, figsize=(10, 8), sharex=True)

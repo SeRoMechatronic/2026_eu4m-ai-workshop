@@ -1,24 +1,133 @@
 #!/usr/bin/env python3
-"""Build the student and instructor notebooks from reviewed source cells."""
+"""Build the student, solution and access-check notebooks from reviewed cells.
+
+The notebooks are self-contained: the simulator is copied verbatim from
+``src/eu4m_workshop/simulation.py`` and the dataset is verified against the
+SHA-256 recorded in ``data/metadata.json`` whichever source provides it.
+"""
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from textwrap import dedent
 
 import nbformat as nbf
 
+from course_config import DATA_REF, PUBLIC_REPOSITORY
+
 
 ROOT = Path(__file__).resolve().parents[1]
 NOTEBOOKS = ROOT / "notebooks"
+SIMULATION_SOURCE = ROOT / "src" / "eu4m_workshop" / "simulation.py"
+METADATA = ROOT / "data" / "metadata.json"
+
+SIMULATOR_HEADER = '#@title Simulador de referencia (no hace falta modificarlo) { display-mode: "form" }\n'
+HIDDEN_CELL = {
+    "cellView": "form",
+    "jupyter": {"source_hidden": True},
+}
 
 
 def markdown(text: str):
     return nbf.v4.new_markdown_cell(dedent(text).strip())
 
 
-def code(text: str):
-    return nbf.v4.new_code_cell(dedent(text).strip())
+def code(text: str, metadata: dict | None = None):
+    cell = nbf.v4.new_code_cell(dedent(text).strip())
+    if metadata:
+        cell["metadata"].update(metadata)
+    return cell
+
+
+def expected_sha256() -> str:
+    return json.loads(METADATA.read_text(encoding="utf-8"))["sha256"]["combined_dataset"]
+
+
+def simulator_cell():
+    """Embed the reviewed simulator so the notebook never depends on the network."""
+    source = SIMULATION_SOURCE.read_text(encoding="utf-8").strip()
+    return code(SIMULATOR_HEADER + source, HIDDEN_CELL)
+
+
+def loader_cell():
+    template = """
+        import hashlib
+        import io
+        import urllib.request
+        from pathlib import Path
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+        import pandas as pd
+
+        REPOSITORY = "@@REPOSITORY@@"
+        DATA_REF = "@@DATA_REF@@"
+        EXPECTED_SHA256 = "@@SHA256@@"
+        PART_NAMES = [
+            "actuator_signals_nominal.csv",
+            "actuator_signals_actuator_loss.csv",
+            "actuator_signals_sensor_bias.csv",
+        ]
+
+
+        def canonical_sha256(df):
+            \"\"\"SHA-256 del CSV canónico: finales de línea LF y ocho decimales.\"\"\"
+            text = df.to_csv(index=False, float_format="%.8f", lineterminator="\\n")
+            return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+        def from_local_files():
+            # Jupyter suele ejecutar desde notebooks/; Colab, desde el directorio de carga.
+            for folder in (Path("data"), Path("../data"), Path(".")):
+                paths = [folder / name for name in PART_NAMES]
+                if all(path.exists() for path in paths):
+                    return pd.concat([pd.read_csv(path) for path in paths], ignore_index=True)
+            return None
+
+
+        def from_github():
+            base = f"https://raw.githubusercontent.com/{REPOSITORY}/{DATA_REF}/data"
+            frames = []
+            for name in PART_NAMES:
+                with urllib.request.urlopen(f"{base}/{name}", timeout=10) as response:
+                    frames.append(pd.read_csv(io.BytesIO(response.read())))
+            return pd.concat(frames, ignore_index=True)
+
+
+        SOURCES = [
+            ("archivos locales", from_local_files),
+            (f"GitHub ({DATA_REF})", from_github),
+            ("simulador integrado", simulate_dataset),
+        ]
+
+        data = None
+        for source, loader in SOURCES:
+            try:
+                candidate = loader()
+            except Exception as error:
+                print(f"- {source}: no disponible ({type(error).__name__})")
+                continue
+            if candidate is None:
+                print(f"- {source}: no encontrado")
+            elif canonical_sha256(candidate) != EXPECTED_SHA256:
+                print(f"- {source}: la huella SHA-256 no coincide; se descarta")
+            else:
+                data = candidate
+                break
+
+        assert data is not None, "Ninguna fuente produjo el dataset esperado."
+        print(f"Fuente: {source}")
+        print(f"Filas: {len(data):,}")
+        data.head()
+    """
+    text = (
+        dedent(template)
+        .replace("@@REPOSITORY@@", PUBLIC_REPOSITORY)
+        .replace("@@DATA_REF@@", DATA_REF)
+        .replace("@@SHA256@@", expected_sha256())
+    )
+    return code(text)
 
 
 def base_cells():
@@ -43,62 +152,29 @@ def base_cells():
             """
             ## 1  Carga reproducible
 
-            La ruta local se utiliza en una copia del repositorio. Si el notebook se
-            abre en Colab desde el repositorio público, se descarga el mismo CSV desde
-            la rama `main`. No se solicita acceso a Google Drive.
+            El notebook busca los datos en tres lugares, por orden, y **solo acepta
+            una fuente si su huella SHA-256 coincide con la registrada en
+            `data/metadata.json`**:
+
+            1. archivos locales (una copia del repositorio);
+            2. GitHub, desde la etiqueta fijada del repositorio público;
+            3. el simulador integrado, que regenera exactamente los mismos datos.
+
+            Ver «no encontrado» en la primera fuente es normal en Colab. No se solicita
+            acceso a Google Drive. La celda del simulador aparece plegada; puede
+            abrirla para leer el modelo completo.
             """
         ),
-        code(
-            """
-            from pathlib import Path
-
-            import matplotlib.pyplot as plt
-            import numpy as np
-            import pandas as pd
-
-            REPOSITORY = "SeRoMechatronic/2026_eu4m-ai-workshop"
-            PART_NAMES = [
-                "actuator_signals_nominal.csv",
-                "actuator_signals_actuator_loss.csv",
-                "actuator_signals_sensor_bias.csv",
-            ]
-            # Jupyter ejecuta normalmente desde ``notebooks/``; Colab lo hace desde
-            # el directorio de carga. Se prueban ambos casos antes de usar la red.
-            DATA_DIRS = [Path("data"), Path("../data"), Path(".")]
-            LOCAL_DATA = next(
-                (folder / "actuator_signals.csv" for folder in DATA_DIRS
-                 if (folder / "actuator_signals.csv").exists()),
-                None,
-            )
-            LOCAL_PARTS = next(
-                ([folder / name for name in PART_NAMES] for folder in DATA_DIRS
-                 if all((folder / name).exists() for name in PART_NAMES)),
-                None,
-            )
-
-            if LOCAL_DATA is not None:
-                data = pd.read_csv(LOCAL_DATA)
-                source = str(LOCAL_DATA)
-            elif LOCAL_PARTS is not None:
-                data = pd.concat([pd.read_csv(path) for path in LOCAL_PARTS], ignore_index=True)
-                source = " + ".join(map(str, LOCAL_PARTS))
-            else:
-                base = f"https://raw.githubusercontent.com/{REPOSITORY}/main/data"
-                urls = [f"{base}/{name}" for name in PART_NAMES]
-                data = pd.concat([pd.read_csv(url) for url in urls], ignore_index=True)
-                source = "rama main (3 partes)"
-            print(f"Fuente: {source}")
-            print(f"Filas: {len(data):,}")
-            data.head()
-            """
-        ),
+        simulator_cell(),
+        loader_cell(),
         markdown(
             """
             ## 2  Contrato del dataset
 
             Antes de interpretar una gráfica, compruebe que el archivo corresponde al
             experimento descrito: 24 ejecuciones, tres escenarios equilibrados, 400
-            muestras por ejecución y periodo de 0,02 s.
+            muestras por ejecución y periodo de 0,02 s. La huella SHA-256 confirma que
+            los valores son exactamente los del experimento de referencia.
             """
         ),
         code(
@@ -114,6 +190,8 @@ def base_cells():
             assert data.groupby("scenario")["run_id"].nunique().eq(8).all()
             assert data.groupby("run_id").size().eq(400).all()
             assert not data.isna().any().any()
+            assert canonical_sha256(data) == EXPECTED_SHA256
+            print(f"SHA-256: {canonical_sha256(data)}")
             print("PASS  El archivo cumple el contrato.")
             """
         ),
@@ -275,7 +353,11 @@ def solution_notebook():
                     "claim": 1,
                     "decision": "aceptar",
                     "evidence": "summary['tracking_rmse_true_m']; máximo mediano por escenario",
-                    "remaining_limit": "Resultado del modelo sintético y de esta configuración",
+                    "remaining_limit": (
+                        "Resultado del modelo sintético y de esta configuración. La diferencia con "
+                        "sensor_bias es menor que la dispersión entre ejecuciones; solo la "
+                        "diferencia con nominal es robusta"
+                    ),
                 },
                 {
                     "claim": 2,
@@ -297,15 +379,26 @@ def solution_notebook():
             """
             ## 6  Pruebas de las decisiones
 
-            La primera prueba confirma una propiedad limitada al dataset. La segunda
-            muestra que la señal necesaria para confirmar el sesgo pertenece a la
-            validación de la simulación.
+            La primera prueba confirma una propiedad limitada al dataset y muestra hasta
+            dónde llega: la pérdida del actuador supera siempre al nominal, pero sus
+            rangos se solapan con los del sesgo del sensor. La segunda muestra que la
+            señal necesaria para confirmar el sesgo pertenece a la validación de la
+            simulación.
             """
         ),
         code(
             """
             largest = summary["tracking_rmse_true_m"].idxmax()
             assert largest == "actuator_loss"
+
+            by_scenario = {
+                s: features.loc[features["scenario"] == s, "tracking_rmse_true_m"]
+                for s in ("nominal", "actuator_loss", "sensor_bias")
+            }
+            # Separación robusta frente al nominal...
+            assert by_scenario["actuator_loss"].min() > by_scenario["nominal"].max()
+            # ...pero sin separación frente a sensor_bias: los rangos se solapan.
+            assert by_scenario["actuator_loss"].min() < by_scenario["sensor_bias"].max()
 
             operational_columns = {
                 "time_s", "reference_m", "position_measured_m",
@@ -321,11 +414,80 @@ def solution_notebook():
             """
             ## 7  Interpretación orientativa
 
-            La pérdida del actuador aumenta el error real en esta configuración. El
-            sesgo del sensor resulta visible al comparar medida y posición real, pero
-            esa comparación no estaría disponible con un único sensor real. La
-            conclusión responsable propone una medición independiente y evita
-            generalizar desde un caso sintético.
+            La pérdida del actuador aumenta el error real en esta configuración, sin
+            ambigüedad frente al escenario nominal. Frente al sesgo del sensor la
+            diferencia es demasiado pequeña para sostener un orden fiable. El sesgo
+            resulta visible al comparar medida y posición real, pero esa comparación
+            no estaría disponible con un único sensor real. La conclusión responsable
+            propone una medición independiente y evita generalizar desde un caso
+            sintético.
+            """
+        ),
+    ]
+    return nb
+
+
+def access_check_notebook():
+    nb = nbf.v4.new_notebook()
+    nb["metadata"] = {
+        "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
+        "language_info": {"name": "python", "version": "3.11"},
+        "colab": {"name": "00_access_check.ipynb", "provenance": []},
+    }
+    url = f"https://raw.githubusercontent.com/{PUBLIC_REPOSITORY}/{DATA_REF}/data/metadata.json"
+    nb["cells"] = [
+        markdown(
+            """
+            # Comprobación de acceso
+
+            Esta prueba dura dos minutos. Compruebe que puede abrir el notebook, ejecutar
+            código y dibujar una gráfica **antes** de la primera sesión.
+
+            1. Menú **Entorno de ejecución → Ejecutar todo** (en Jupyter: *Run All*).
+            2. Espere a que termine la última celda.
+            3. Envíe al docente la línea que empieza por `ACCESO_OK`.
+
+            Si aparece un error, envíe una captura de pantalla. No instale nada ni
+            cambie la configuración por su cuenta.
+            """
+        ),
+        code(
+            """
+            import platform
+            import urllib.request
+
+            import matplotlib
+            import matplotlib.pyplot as plt
+            import numpy as np
+            import pandas as pd
+
+            fig, ax = plt.subplots(figsize=(4, 2))
+            ax.plot(np.arange(6) ** 2, marker="o")
+            ax.set_title("Gráfica de prueba")
+            plt.show()
+            """
+        ),
+        code(
+            f"""
+            try:
+                urllib.request.urlopen("{url}", timeout=10).close()
+                github = "sí"
+            except Exception:
+                github = "no"
+
+            print(
+                "ACCESO_OK"
+                f" | Python {{platform.python_version()}}"
+                f" | numpy {{np.__version__}}"
+                f" | pandas {{pd.__version__}}"
+                f" | matplotlib {{matplotlib.__version__}}"
+                f" | GitHub: {{github}}"
+            )
+            if github == "no":
+                print(
+                    "Aviso: no hay acceso a GitHub desde este entorno. El notebook del "
+                    "curso funcionará igualmente con el simulador integrado."
+                )
             """
         ),
     ]
@@ -341,12 +503,15 @@ def assign_stable_cell_ids(notebook, prefix: str) -> None:
 def main() -> None:
     NOTEBOOKS.mkdir(exist_ok=True)
     for name, prefix, notebook in (
+        ("00_access_check.ipynb", "access", access_check_notebook()),
         ("03_actuator_case_student.ipynb", "student", student_notebook()),
         ("03_actuator_case_solution.ipynb", "solution", solution_notebook()),
     ):
         assign_stable_cell_ids(notebook, prefix)
-        nbf.write(notebook, NOTEBOOKS / name)
-        print(NOTEBOOKS / name)
+        path = NOTEBOOKS / name
+        # Escribir bytes evita que Windows convierta LF en CRLF.
+        path.write_bytes(nbf.writes(notebook).encode("utf-8") + b"\n")
+        print(path)
 
 
 if __name__ == "__main__":
