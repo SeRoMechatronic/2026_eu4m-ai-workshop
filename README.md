@@ -43,8 +43,8 @@ carpetas recién creadas. Después:
 
 1. Lea [la guía docente](docs/instructor_guide.md) y la
    [política de herramientas](docs/tool_policy.md).
-2. Publique el contenido de `student_pack/` en el repositorio público y cree la
-   etiqueta `v1.0.0` (véase [colab_setup.md](docs/colab_setup.md)).
+2. Publique el repositorio de estudiantes con `scripts/prepare_public_repo.py` (véase
+   [colab_setup.md](docs/colab_setup.md)).
 3. Ejecute `python scripts/check_public_urls.py`.
 4. Complete la [lista de comprobación](docs/release_checklist.md) y consulte el
    [plan de contingencia](docs/contingency_plan.md).
@@ -91,6 +91,7 @@ Los hashes de datos son idénticos en todas las combinaciones probadas.
 | `build_notebooks.py` | Construye los tres notebooks desde celdas revisadas |
 | `build_agenda.py` | Regenera la agenda de la guía docente desde las notas de las diapositivas |
 | `build_packs.py` | Paquete de estudiantes (verificado) y kit del docente |
+| `prepare_public_repo.py` | Crea el repositorio público local (1 commit y etiqueta), sin publicar |
 | `check_public_urls.py` | Comprueba el repositorio público tras publicarlo |
 | `export_offline.py` | HTML ejecutado, notas y PDF de las diapositivas |
 | `instructor/generate_challenge_cases.py` | Casos A, B y C con semilla privada |

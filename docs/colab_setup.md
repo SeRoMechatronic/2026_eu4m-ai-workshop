@@ -27,11 +27,14 @@ ejemplo, guardado desde una hoja de cálculo) se descarta y se usa la fuente sig
 
 ## Publicación (docente)
 
-1. `python scripts/build_packs.py` genera `dist/student_pack/`.
-2. Publique ese contenido en el repositorio público
-   `SeRoMechatronic/2026_eu4m-ai-workshop-student`, rama `main`. Nunca publique este
-   repositorio maestro: contiene soluciones y la clave del reto.
-3. Cree la etiqueta `v1.0.0` en el repositorio público.
+1. En GitHub, cree el repositorio **público y vacío**
+   `SeRoMechatronic/2026_eu4m-ai-workshop-student` (sin README, licencia ni `.gitignore`).
+   Nunca publique este repositorio maestro: contiene soluciones y la clave del reto.
+2. `python scripts/prepare_public_repo.py <carpeta_nueva>` construye el paquete de
+   estudiantes, lo verifica y crea un repositorio local con un commit y la etiqueta
+   `v1.0.0`. No publica nada; imprime los comandos `git` para hacerlo.
+3. Ejecute esos comandos (`git remote add`, `git push -u origin main`,
+   `git push origin v1.0.0`).
 4. `python scripts/check_public_urls.py` confirma que los enlaces responden y que los
    datos descargados tienen la huella esperada.
 

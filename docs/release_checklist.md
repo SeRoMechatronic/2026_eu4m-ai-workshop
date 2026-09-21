@@ -12,7 +12,7 @@
 - [ ] Confirmar fecha, aula, número de estudiantes y carácter evaluable.
 - [ ] Revisar la política institucional de IA y datos.
 - [ ] `python scripts/build_packs.py --offline --zip` sin errores.
-- [ ] Publicar `dist/student_pack/` en el repositorio público y crear la etiqueta `v1.0.0`.
+- [ ] Publicar el paquete de estudiantes con `scripts/prepare_public_repo.py` (etiqueta `v1.0.0`).
 - [ ] `python scripts/check_public_urls.py` termina con código 0.
 - [ ] Probar Colab con una cuenta de profesor y dos cuentas EU4M ordinarias
       (tabla de [colab_setup.md](colab_setup.md)).

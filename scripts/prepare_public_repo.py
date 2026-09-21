@@ -23,7 +23,13 @@ def git(*args: str, cwd: Path) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("out", type=Path, help="carpeta NUEVA donde crear el repositorio")
-    out = parser.parse_args().out.resolve()
+    parser.add_argument(
+        "--message",
+        default=f"Paquete de estudiantes {DATA_REF}",
+        help="mensaje del commit inicial",
+    )
+    args = parser.parse_args()
+    out = args.out.resolve()
     if out.exists():
         # build_student_pack borra su destino: no permitimos que apunte a algo existente.
         print(f"{out} ya existe. Elija una carpeta que no exista.")
@@ -38,7 +44,7 @@ def main() -> int:
 
     git("init", "-b", "main", cwd=out)
     git("add", "-A", cwd=out)
-    git("commit", "-m", f"Paquete de estudiantes {DATA_REF}", cwd=out)
+    git("commit", "-m", args.message, cwd=out)
     git("tag", DATA_REF, cwd=out)
 
     print(
