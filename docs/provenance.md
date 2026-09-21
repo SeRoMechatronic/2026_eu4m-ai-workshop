@@ -17,8 +17,16 @@
 ## Evidencia propia del repositorio
 
 - `src/eu4m_workshop/simulation.py` define el modelo, parámetros y semillas.
-- `data/metadata.json` registra propósito, configuración y hashes SHA-256.
-- `tests/` verifica reproducibilidad, cálculos, separación de respuestas y estructura docente.
+- `data/metadata.json` registra propósito, configuración y hashes SHA-256. La
+  convención es fija: CSV en UTF-8 con finales de línea LF y ocho decimales, de modo
+  que los valores coinciden en Linux, Windows y Colab. El hash del dataset combinado
+  se calcula sobre la concatenación de las tres partes; no existe un archivo combinado.
+- Los notebooks descartan cualquier fuente de datos cuyo hash no coincida.
+- `tests/` verifica reproducibilidad entre versiones de pandas y numpy, cálculos,
+  separación de respuestas, ausencia de fugas del reto y estructura docente.
+- Los casos del reto (`data/case_*.csv`) se generan con una semilla privada
+  (`instructor/generate_challenge_cases.py`) y una prueba comprueba que ninguno
+  coincide con una ejecución del dataset del módulo 3.
 - `results/scenario_summary.csv` contiene medianas descriptivas; no contiene una
   prueba de significancia ni una estimación de precisión diagnóstica.
 

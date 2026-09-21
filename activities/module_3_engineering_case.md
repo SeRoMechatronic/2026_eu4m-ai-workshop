@@ -2,7 +2,8 @@
 
 ## Tiempo
 
-60 minutos: 40 minutos de notebook y 20 minutos de interpretación y discusión.
+60 minutos: 40 minutos de notebook (los primeros 10 se dedican a los requisitos) y
+20 minutos de interpretación y discusión.
 
 ## Contexto
 
@@ -20,14 +21,21 @@ del sensor. Los parámetros varían ligeramente entre ejecuciones.
 
 ## Tareas
 
-1. Abra `notebooks/03_actuator_case_student.ipynb`.
-2. Compruebe el número de filas, ejecuciones y escenarios.
-3. Visualice una ejecución de cada escenario.
-4. Calcule las características indicadas.
-5. Evalúe tres afirmaciones propuestas por una IA.
-6. Ejecute al menos una prueba o cálculo independiente.
-7. Explique por qué `position_true_m` no estaría disponible en un sistema real.
-8. Proponga la siguiente medición necesaria para confirmar un sesgo del sensor.
+1. **Antes de abrir el notebook**, escriba dos requisitos medibles para el actuador
+   nominal. Cada uno debe indicar magnitud, umbral, unidad y condición de la prueba
+   (por ejemplo, el intervalo de tiempo que se ignora).
+2. Abra `notebooks/03_actuator_case_student.ipynb` y ejecute las celdas. El notebook
+   busca los datos en tres lugares y solo acepta una fuente si su huella SHA-256
+   coincide con la registrada.
+3. Compruebe el número de filas, ejecuciones y escenarios.
+4. Visualice una ejecución de cada escenario.
+5. Calcule las características indicadas.
+6. Indique con qué cálculo comprobaría cada requisito del paso 1 y si el escenario
+   nominal lo cumple.
+7. Evalúe tres afirmaciones propuestas por una IA.
+8. Ejecute al menos una prueba o cálculo independiente.
+9. Explique por qué `position_true_m` no estaría disponible en un sistema real.
+10. Proponga la siguiente medición necesaria para confirmar un sesgo del sensor.
 
 ## Entrega
 

@@ -28,6 +28,21 @@ La IA se utiliza para proponer borradores, consultas, código o interpretaciones
 La evaluación recae en la verificación: fuente, cálculo, prueba, decisión y límite.
 El curso no depende de una marca, cuenta premium ni API.
 
+## Decisión sobre portabilidad y distribución
+
+Colab es la ruta principal por su simplicidad, pero el curso no depende de ella ni de
+GitHub. Tres decisiones lo garantizan:
+
+- **Notebook autocontenido.** Incluye el simulador (copiado literalmente de
+  `simulation.py`) y prueba tres fuentes de datos, aceptando solo la que coincide con la
+  huella SHA-256 registrada. Si no hay red ni archivos, regenera los datos exactos.
+- **Repositorio maestro privado y paquete público.** El alumnado solo recibe lo que
+  `scripts/build_packs.py` autoriza. Así las soluciones y la clave del reto no llegan
+  al repositorio del que abre Colab.
+- **Casos del reto fuera del dataset.** Los casos A y B proceden de una semilla privada
+  y no son ejecuciones del dataset del módulo 3; el caso C alimenta la prueba de salida
+  con un caso que ningún equipo ha analizado.
+
 ## Extensión avanzada sugerida
 
 Después del curso base puede añadirse un bloque independiente de 3 a 4 horas con

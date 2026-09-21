@@ -2,8 +2,9 @@
 
 ## Antes del curso
 
-1. Confirme que puede acceder a GitHub y, si se utilizará, a Google Colab con su
-   cuenta individual de EU4M.
+1. Abra la comprobación de acceso (el docente le enviará el enlace), ejecute todas
+   las celdas y envíe la línea que empieza por `ACCESO_OK`. Si su cuenta institucional
+   no permite Google Colab, avise: trabajará en pareja o con el material sin conexión.
 2. Lleve un portátil con navegador actualizado y cargador.
 3. Descargue el paquete alternativo si el docente lo distribuye.
 4. No cargue datos personales, confidenciales o sujetos a acuerdos de proyecto en

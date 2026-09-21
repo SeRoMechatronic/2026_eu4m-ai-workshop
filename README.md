@@ -14,52 +14,86 @@ de inteligencia artificial sigue el protocolo PVRD:
 3. **Refinar**: corregir la salida o reformular la petición.
 4. **Documentar**: registrar la decisión, los cambios y los límites.
 
-## Inicio rápido
+## Este es el repositorio maestro
 
-### Estudiantes
+Contiene soluciones, la clave del reto, las diapositivas con notas y las pruebas.
+**No debe publicarse.** El alumnado recibe solo `dist/student_pack/`, que
+`scripts/build_packs.py` genera con una lista blanca y comprueba (sin soluciones,
+sin casos del reto, sin enlaces rotos).
 
-1. Lea [la guía del estudiante](docs/student_guide.md).
-2. Descargue las plantillas de [registro PVRD](templates/pvrd_log.csv) y
-   [matriz de fuentes](templates/source_matrix.csv).
-3. Abra el
-   [notebook del caso del actuador](notebooks/03_actuator_case_student.ipynb).
-4. Conserve todas sus evidencias hasta el cierre del curso.
+| Audiencia | Qué recibe | Dónde |
+|---|---|---|
+| Estudiantes | `dist/student_pack/` | Repositorio público (Colab abre de ahí) |
+| Docente | `dist/instructor_kit/`: todo, más `handouts/` y `offline/` | Portátil, USB y nube personal |
 
-[Abrir el notebook en Colab](https://colab.research.google.com/github/SeRoMechatronic/2026_eu4m-ai-workshop/blob/main/notebooks/03_actuator_case_student.ipynb)
-cuando el repositorio sea público. Si continúa privado, siga la
-[configuración de Colab](docs/colab_setup.md). El notebook también funciona
-localmente con Python 3.10 o posterior.
+## Inicio rápido (docente)
 
-### Docente
-
-1. Lea [la guía docente](docs/instructor_guide.md).
-2. Revise [la política de herramientas](docs/tool_policy.md) con la coordinación.
-3. Ejecute la comprobación completa:
+Requiere Python 3.10 o posterior.
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
 python -m pip install -r requirements.txt
-python scripts/run_all.py
+python scripts/run_all.py          # datos, notebooks, figuras, pruebas y preflight
+python scripts/build_packs.py --offline --zip --out ../eu4m_dist
 ```
 
-4. Utilice el [plan de contingencia](docs/contingency_plan.md) si falla internet o
-   una herramienta externa.
-5. Complete la [lista de comprobación](docs/release_checklist.md).
+Use una carpeta de salida **fuera de OneDrive**: OneDrive puede bloquear el borrado de
+carpetas recién creadas. Después:
+
+1. Lea [la guía docente](docs/instructor_guide.md) y la
+   [política de herramientas](docs/tool_policy.md).
+2. Publique el contenido de `student_pack/` en el repositorio público y cree la
+   etiqueta `v1.0.0` (véase [colab_setup.md](docs/colab_setup.md)).
+3. Ejecute `python scripts/check_public_urls.py`.
+4. Complete la [lista de comprobación](docs/release_checklist.md) y consulte el
+   [plan de contingencia](docs/contingency_plan.md).
+
+## Portabilidad
+
+El notebook del caso es autocontenido: incluye el simulador y prueba tres fuentes de
+datos (archivos locales, GitHub, simulador integrado), aceptando solo la que
+coincide con la huella SHA-256 registrada. Funciona igual en Colab, Jupyter local y
+sin conexión. El kit del docente añade los notebooks ya ejecutados en HTML, las
+diapositivas en PDF y sus notas en texto.
+
+### Entornos verificados
+
+| Entorno | Resultado |
+|---|---|
+| Windows · Python 3.11.9 · pandas 3.0.2 · numpy 2.2.3 · matplotlib 3.10.8 | Pruebas y `run_all.py` correctos |
+| Windows · Python 3.11.9 · pandas 2.3.3 · numpy 2.4.6 · matplotlib 3.11.2 | Pruebas y `run_all.py` correctos |
+| GitHub Actions: Linux 3.11, Linux 3.10 con `pandas<3`, Windows 3.11 | Definidos en `.github/workflows/ci.yml` |
+
+Los hashes de datos son idénticos en todas las combinaciones probadas.
 
 ## Estructura
 
 | Ruta | Contenido |
 |---|---|
-| `slides/` | Cuatro presentaciones editables, una por módulo |
+| `slides/` | Cuatro presentaciones editables con notas y tiempos, una por módulo |
 | `docs/` | Programa, guías, política, accesibilidad y referencias |
 | `activities/` | Enunciados para los cuatro módulos |
 | `templates/` | Entregables editables |
-| `notebooks/` | Notebook del estudiante y versión resuelta |
-| `data/` | Datos sintéticos por escenario y metadatos de generación |
+| `notebooks/` | Comprobación de acceso, notebook del estudiante y versión resuelta |
+| `data/` | Datos sintéticos por escenario, metadatos y casos del reto (solo instructor) |
 | `results/` | Características y resultados de referencia |
-| `instructor/` | Soluciones, claves y rúbricas |
-| `src/`, `scripts/`, `tests/` | Caso reproducible y validación automática |
+| `instructor/` | Soluciones, clave y generador del reto, rúbricas |
+| `packs/` | README y requisitos del paquete de estudiantes |
+| `src/`, `scripts/`, `tests/` | Caso reproducible, herramientas de construcción y validación |
+
+### Scripts
+
+| Script | Función |
+|---|---|
+| `run_all.py` | Regenera datos, notebooks y figuras; ejecuta notebooks, pruebas y `preflight` |
+| `generate_dataset.py` | Datos por escenario, resultados y `metadata.json` con huellas |
+| `build_notebooks.py` | Construye los tres notebooks desde celdas revisadas |
+| `build_agenda.py` | Regenera la agenda de la guía docente desde las notas de las diapositivas |
+| `build_packs.py` | Paquete de estudiantes (verificado) y kit del docente |
+| `check_public_urls.py` | Comprueba el repositorio público tras publicarlo |
+| `export_offline.py` | HTML ejecutado, notas y PDF de las diapositivas |
+| `instructor/generate_challenge_cases.py` | Casos A, B y C con semilla privada |
 
 ## Límites del caso técnico
 
