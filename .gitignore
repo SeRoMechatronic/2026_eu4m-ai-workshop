@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.ipynb_checkpoints/
+.DS_Store
+*.egg-info/
+.build/
+.claude/
+# Paquetes generados por scripts/build_packs.py
+dist/
+# El CSV combinado ya no se escribe; no debe llegar al repositorio si alguien lo crea.
+data/actuator_signals.csv

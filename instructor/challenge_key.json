@@ -1,0 +1,24 @@
+{
+  "warning": "Do not distribute before the assessed activity.",
+  "challenge_base_seed": 7319051,
+  "mapping": {
+    "case_A": {
+      "scenario": "actuator_loss",
+      "run_index": 0
+    },
+    "case_B": {
+      "scenario": "sensor_bias",
+      "run_index": 0
+    },
+    "case_C": {
+      "scenario": "sensor_bias",
+      "run_index": 1
+    }
+  },
+  "sha256": {
+    "case_A.csv": "32dc6043227c260505e4c697d8bd0418c3dc8730cc87fd562a92d6f380537017",
+    "case_B.csv": "bcd6dee230f898dfcc07f20a9255eae9aa59594e69afdc42126403b021615a00",
+    "case_C.csv": "0dbd863cbad562628c1ad522e00fcf8077aed4700a1b56ea2c18e10d2dd3743c"
+  },
+  "important_limit": "The operational files do not contain independent ground truth. A student must not claim a definitive diagnosis from them alone."
+}

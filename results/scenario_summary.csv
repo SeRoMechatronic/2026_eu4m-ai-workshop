@@ -1,0 +1,4 @@
+scenario,tracking_rmse_measured_m,tracking_rmse_true_m,mean_sensor_residual_m,force_command_rms_n,force_saturation_fraction,final_true_error_m
+actuator_loss,0.33988555,0.33990540,0.00004171,3.71705597,0.04285714,0.00239487
+nominal,0.29722895,0.29713492,0.00011916,2.98667371,0.02857143,-0.00012125
+sensor_bias,0.29656628,0.33788035,0.12007099,2.96653950,0.02857143,0.12011698
